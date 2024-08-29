@@ -31,9 +31,13 @@
             color: #0056b3;
         }
 
-        .animated-links {
-            margin-top: 20px;
-            animation: bounce 1s infinite;
+        #rocket {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: url('https://example.com/rocket.png') no-repeat center center;
+            background-size: contain;
+            display: none;
         }
 
         @keyframes fadeIn {
@@ -45,17 +49,60 @@
             from { transform: translateY(-50px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-10px); }
-            60% { transform: translateY(-5px); }
-        }
     </style>
 </head>
 <body>
     <h1>Welcome to My Website!</h1>
     <p>Check out my <a href="https://github.com/joelludin" target="_blank">GitHub</a> profile and my <a href="https://www.linkedin.com/in/joelludin" target="_blank">LinkedIn</a> page!</p>
-    <p class="animated-links">Stay tuned for updates on Version 2!</p>
+    <p>Stay tuned for updates on Version 2!</p>
+    <div id="rocket"></div>
+    <script>
+        const rocket = document.getElementById('rocket');
+        let position = 0;
+        let direction = 0;
+        const moveDistance = 10;
+        const squareSize = 300;
+
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'Space') {
+                rocket.style.display = 'block';
+                rocket.style.left = `${position}px`;
+                rocket.style.top = `${position}px`;
+                direction = (direction + 1) % 4; // Change direction
+                moveRocket();
+            }
+        });
+
+        function moveRocket() {
+            if (direction === 0) { // Right
+                position += moveDistance;
+                if (position >= squareSize) {
+                    position = squareSize;
+                    direction = 1; // Change direction to down
+                }
+            } else if (direction === 1) { // Down
+                position += moveDistance;
+                if (position >= squareSize) {
+                    position = squareSize;
+                    direction = 2; // Change direction to left
+                }
+            } else if (direction === 2) { // Left
+                position -= moveDistance;
+                if (position <= 0) {
+                    position = 0;
+                    direction = 3; // Change direction to up
+                }
+            } else if (direction === 3) { // Up
+                position -= moveDistance;
+                if (position <= 0) {
+                    position = 0;
+                    direction = 0; // Change direction to right
+                }
+            }
+            rocket.style.left = `${position}px`;
+            rocket.style.top = `${position}px`;
+            requestAnimationFrame(moveRocket);
+        }
+    </script>
 </body>
 </html>
