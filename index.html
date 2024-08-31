@@ -18,6 +18,7 @@
             font-size: 3em;
             margin-bottom: 20px;
             animation: slideIn 1s forwards;
+            font-family: 'Orbitron', sans-serif;
         }
 
         a {
@@ -45,84 +46,128 @@
             from { transform: translateY(-50px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
+
+        #gameOverMessage {
+            display: none;
+            font-size: 1.5em;
+            color: red;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
-    <h1>Welcome to My Snake Game!</h1>
+    <h1>Hi, welcome to my page</h1>
     <p>Check out my <a href="https://www.linkedin.com/in/joelludin" target="_blank">LinkedIn</a> page and my <a href="https://github.com/joelludin" target="_blank">GitHub</a> profile!</p>
-    <p>Use arrow keys to play the game!</p>
+    <p>Press SPACE to start the game! Use arrow keys to play!</p>
     <canvas id="game" width="400" height="400"></canvas>
+    <div id="gameOverMessage">Game Over! Hit SPACE to play again!</div>
     <script>
         const canvas = document.getElementById('game');
         const ctx = canvas.getContext('2d');
         const grid = 20;
-        let count = 0;
-        let snake = [{ x: 9 * grid, y: 9 * grid }];
-        let apple = { x: Math.floor(Math.random() * 20) * grid, y: Math.floor(Math.random() * 20) * grid };
+        const gridSize = (canvas.width / grid) * (canvas.height / grid);
+        let snake = [];
+        let food = {};
         let dx = grid;
         let dy = 0;
+        let score = 0;
+        let gameLoop;
 
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowUp' && dy === 0) {
-                dx = 0; dy = -grid;
-            } else if (e.key === 'ArrowDown' && dy === 0) {
-                dx = 0; dy = grid;
-            } else if (e.key === 'ArrowLeft' && dx === 0) {
-                dx = -grid; dy = 0;
-            } else if (e.key === 'ArrowRight' && dx === 0) {
-                dx = grid; dy = 0;
+        function initGame() {
+            snake = [
+                {x: 5 * grid, y: 5 * grid}
+            ];
+            createFood();
+            dx = grid;
+            dy = 0;
+            score = 0;
+            document.getElementById('gameOverMessage').style.display = 'none';
+        }
+
+        function createFood() {
+            food = {
+                x: Math.floor(Math.random() * (canvas.width / grid)) * grid,
+                y: Math.floor(Math.random() * (canvas.height / grid)) * grid
+            };
+            // Ensure food doesn't spawn on snake
+            while (snake.some(segment => segment.x === food.x && segment.y === food.y)) {
+                food = {
+                    x: Math.floor(Math.random() * (canvas.width / grid)) * grid,
+                    y: Math.floor(Math.random() * (canvas.height / grid)) * grid
+                };
             }
-        });
+        }
 
-        function loop() {
-            if (++count < 4) {
-                requestAnimationFrame(loop);
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw snake
+            ctx.fillStyle = 'green';
+            snake.forEach(segment => {
+                ctx.fillRect(segment.x, segment.y, grid-1, grid-1);
+            });
+
+            // Draw food
+            ctx.fillStyle = 'red';
+            ctx.fillRect(food.x, food.y, grid-1, grid-1);
+
+            // Move snake
+            let newHead = {x: snake[0].x + dx, y: snake[0].y + dy};
+
+            // Check collision with walls
+            if (newHead.x < 0 || newHead.x >= canvas.width || newHead.y < 0 || newHead.y >= canvas.height) {
+                gameOver();
                 return;
             }
-            count = 0;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawApple();
-            moveSnake();
-            drawSnake();
-            requestAnimationFrame(loop);
-        }
 
-        function drawApple() {
-            ctx.fillStyle = 'red';
-            ctx.fillRect(apple.x, apple.y, grid, grid);
-        }
+            // Check collision with self
+            if (snake.some(segment => segment.x === newHead.x && segment.y === newHead.y)) {
+                gameOver();
+                return;
+            }
 
-        function moveSnake() {
-            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
-            snake.unshift(head);
-            if (head.x === apple.x && head.y === apple.y) {
-                apple = { x: Math.floor(Math.random() * 20) * grid, y: Math.floor(Math.random() * 20) * grid };
+            snake.unshift(newHead);
+
+            // Check if snake ate the food
+            if (newHead.x === food.x && newHead.y === food.y) {
+                score++;
+                if (snake.length === gridSize) {
+                    gameOver(true);
+                    return;
+                }
+                createFood();
             } else {
                 snake.pop();
             }
-            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height || collision(head)) {
-                alert('Game Over!');
-                document.location.reload();
+        }
+
+        function gameOver(won = false) {
+            clearInterval(gameLoop);
+            document.getElementById('gameOverMessage').textContent = won ? 'You won! The snake filled the entire grid. Hit SPACE to play again!' : 'Game Over! Hit SPACE to play again!';
+            document.getElementById('gameOverMessage').style.display = 'block';
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ') {
+                clearInterval(gameLoop);
+                initGame();
+                gameLoop = setInterval(drawGame, 100);
+            } else if (e.key === 'ArrowUp' && dy === 0) {
+                dx = 0;
+                dy = -grid;
+            } else if (e.key === 'ArrowDown' && dy === 0) {
+                dx = 0;
+                dy = grid;
+            } else if (e.key === 'ArrowLeft' && dx === 0) {
+                dx = -grid;
+                dy = 0;
+            } else if (e.key === 'ArrowRight' && dx === 0) {
+                dx = grid;
+                dy = 0;
             }
-        }
+        });
 
-        function drawSnake() {
-            ctx.fillStyle = 'lightgreen';
-            snake.forEach(part => {
-                ctx.fillRect(part.x, part.y, grid, grid);
-            });
-        }
-
-        function collision(head) {
-            for (let i = 1; i < snake.length; i++) {
-                if (head.x === snake[i].x && head.y === snake[i].y) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        requestAnimationFrame(loop);
+        initGame();
     </script>
 </body>
 </html>
