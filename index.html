@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to My Website</title>
+    <title>Hi, welcome to my page</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -31,13 +31,9 @@
             color: #0056b3;
         }
 
-        #rocket {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            background: url('https://example.com/rocket.png') no-repeat center center;
-            background-size: contain;
-            display: none;
+        canvas {
+            border: 1px solid #000;
+            margin-top: 20px;
         }
 
         @keyframes fadeIn {
@@ -52,57 +48,81 @@
     </style>
 </head>
 <body>
-    <h1>Welcome to My Website!</h1>
-    <p>Check out my <a href="https://github.com/joelludin" target="_blank">GitHub</a> profile and my <a href="https://www.linkedin.com/in/joelludin" target="_blank">LinkedIn</a> page!</p>
-    <p>Stay tuned for updates on Version 2!</p>
-    <div id="rocket"></div>
+    <h1>Welcome to My Snake Game!</h1>
+    <p>Check out my <a href="https://www.linkedin.com/in/joelludin" target="_blank">LinkedIn</a> page and my <a href="https://github.com/joelludin" target="_blank">GitHub</a> profile!</p>
+    <p>Use arrow keys to play the game!</p>
+    <canvas id="game" width="400" height="400"></canvas>
     <script>
-        const rocket = document.getElementById('rocket');
-        let position = 0;
-        let direction = 0;
-        const moveDistance = 10;
-        const squareSize = 300;
+        const canvas = document.getElementById('game');
+        const ctx = canvas.getContext('2d');
+        const grid = 20;
+        let count = 0;
+        let snake = [{ x: 9 * grid, y: 9 * grid }];
+        let apple = { x: Math.floor(Math.random() * 20) * grid, y: Math.floor(Math.random() * 20) * grid };
+        let dx = grid;
+        let dy = 0;
 
-        document.addEventListener('keydown', (event) => {
-            if (event.code === 'Space') {
-                rocket.style.display = 'block';
-                rocket.style.left = `${position}px`;
-                rocket.style.top = `${position}px`;
-                direction = (direction + 1) % 4; // Change direction
-                moveRocket();
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp' && dy === 0) {
+                dx = 0; dy = -grid;
+            } else if (e.key === 'ArrowDown' && dy === 0) {
+                dx = 0; dy = grid;
+            } else if (e.key === 'ArrowLeft' && dx === 0) {
+                dx = -grid; dy = 0;
+            } else if (e.key === 'ArrowRight' && dx === 0) {
+                dx = grid; dy = 0;
             }
         });
 
-        function moveRocket() {
-            if (direction === 0) { // Right
-                position += moveDistance;
-                if (position >= squareSize) {
-                    position = squareSize;
-                    direction = 1; // Change direction to down
-                }
-            } else if (direction === 1) { // Down
-                position += moveDistance;
-                if (position >= squareSize) {
-                    position = squareSize;
-                    direction = 2; // Change direction to left
-                }
-            } else if (direction === 2) { // Left
-                position -= moveDistance;
-                if (position <= 0) {
-                    position = 0;
-                    direction = 3; // Change direction to up
-                }
-            } else if (direction === 3) { // Up
-                position -= moveDistance;
-                if (position <= 0) {
-                    position = 0;
-                    direction = 0; // Change direction to right
+        function loop() {
+            if (++count < 4) {
+                requestAnimationFrame(loop);
+                return;
+            }
+            count = 0;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawApple();
+            moveSnake();
+            drawSnake();
+            requestAnimationFrame(loop);
+        }
+
+        function drawApple() {
+            ctx.fillStyle = 'red';
+            ctx.fillRect(apple.x, apple.y, grid, grid);
+        }
+
+        function moveSnake() {
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+            snake.unshift(head);
+            if (head.x === apple.x && head.y === apple.y) {
+                apple = { x: Math.floor(Math.random() * 20) * grid, y: Math.floor(Math.random() * 20) * grid };
+            } else {
+                snake.pop();
+            }
+            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height || collision(head)) {
+                alert('Game Over!');
+                document.location.reload();
+            }
+        }
+
+        function drawSnake() {
+            ctx.fillStyle = 'lightgreen';
+            snake.forEach(part => {
+                ctx.fillRect(part.x, part.y, grid, grid);
+            });
+        }
+
+        function collision(head) {
+            for (let i = 1; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    return true;
                 }
             }
-            rocket.style.left = `${position}px`;
-            rocket.style.top = `${position}px`;
-            requestAnimationFrame(moveRocket);
+            return false;
         }
+
+        requestAnimationFrame(loop);
     </script>
 </body>
 </html>
