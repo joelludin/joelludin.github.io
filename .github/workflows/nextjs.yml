@@ -23,7 +23,20 @@ jobs:
           echo "ESG Dashboard directory contents:"
           ls -la esg-dashboard/
           
-      # Build main site
+      # Build dashboard first
+      - name: Install dashboard dependencies
+        run: |
+          cd esg-dashboard
+          npm ci
+          
+      - name: Build dashboard
+        run: |
+          cd esg-dashboard
+          npm run build
+          echo "Dashboard build output:"
+          ls -la
+          
+      # Then build main site
       - name: Install main site dependencies
         run: |
           cd app
@@ -36,19 +49,6 @@ jobs:
           echo "Main site build output:"
           ls -la
           
-      # Build dashboard
-      - name: Install dashboard dependencies
-        run: |
-          cd esg-dashboard
-          npm ci
-          
-      - name: Build dashboard
-        run: |
-          cd esg-dashboard
-          npm run build
-          echo "Dashboard build output:"
-          ls -la
-        
       # Combine outputs
       - name: Combine builds
         run: |
