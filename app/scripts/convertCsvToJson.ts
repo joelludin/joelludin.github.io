@@ -1,6 +1,6 @@
-const fs = require('fs');
-const path = require('path');
-const Papa = require('papaparse');
+import fs from 'fs';
+import path from 'path';
+import Papa from 'papaparse';
 
 const csvFilePath = path.join(process.cwd(), 'public', 'data.csv');
 const jsonFilePath = path.join(process.cwd(), 'public', 'data.json');

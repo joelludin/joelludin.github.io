@@ -2,7 +2,7 @@ name: Deploy Next.js site to Pages
 
 on:
   push:
-    branches: ["main", "feature/monorepo2"]
+    branches: ["main", "feature/monorepo3"]
 
 jobs:
   build:
@@ -19,6 +19,7 @@ jobs:
           cd app
           npm install
           npm run build
+          touch out/.nojekyll
           
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

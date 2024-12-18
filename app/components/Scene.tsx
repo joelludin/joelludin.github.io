@@ -1,34 +1,61 @@
 'use client'
 
-import { Canvas, useFrame } from '@react-three/fiber'
-import { TorusKnot, OrbitControls } from '@react-three/drei'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 
-function AnimatedTorusKnot() {
-  const meshRef = useRef<THREE.Mesh>(null!)
-
-  useFrame((state) => {
-    const time = state.clock.getElapsedTime()
-    meshRef.current.rotation.x = time * 0.3
-    meshRef.current.rotation.y = time * 0.2
-  })
-
-  return (
-    <TorusKnot args={[10, 3, 100, 16]} ref={meshRef}>
-      <meshNormalMaterial />
-    </TorusKnot>
-  )
-}
-
 export default function Scene() {
-  return (
-    <Canvas camera={{ position: [0, 0, 30], fov: 75 }}>
-      <OrbitControls enableZoom={false} enablePan={false} />
-      <ambientLight intensity={0.5} />
-      <pointLight position={[10, 10, 10]} />
-      <AnimatedTorusKnot />
-    </Canvas>
-  )
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!containerRef.current) return
+
+    const scene = new THREE.Scene()
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
+    const renderer = new THREE.WebGLRenderer({ alpha: true })
+    
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    containerRef.current.appendChild(renderer.domElement)
+
+    // Create torus
+    const geometry = new THREE.TorusGeometry(10, 3, 16, 100)
+    const material = new THREE.MeshBasicMaterial({ 
+      color: 0x6366f1,
+      wireframe: true
+    })
+    const torus = new THREE.Mesh(geometry, material)
+    scene.add(torus)
+
+    camera.position.z = 30
+
+    // Handle window resize
+    const handleResize = () => {
+      const width = window.innerWidth
+      const height = window.innerHeight
+      renderer.setSize(width, height)
+      camera.aspect = width / height
+      camera.updateProjectionMatrix()
+    }
+    window.addEventListener('resize', handleResize)
+
+    const animate = () => {
+      requestAnimationFrame(animate)
+      
+      // Rotate the torus
+      torus.rotation.x += 0.01
+      torus.rotation.y += 0.005
+      torus.rotation.z += 0.01
+      
+      renderer.render(scene, camera)
+    }
+
+    animate()
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      containerRef.current?.removeChild(renderer.domElement)
+    }
+  }, [])
+
+  return <div ref={containerRef} className="w-full h-full" />
 }
 

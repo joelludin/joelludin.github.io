@@ -13,9 +13,7 @@ export default function Info() {
         </p>
         <div className="flex space-x-4">
           <Button variant="default" asChild>
-            <Link href="https://www.linkedin.com/in/joelludin" target="_blank" rel="noopener noreferrer">
-              LinkedIn
-            </Link>
+            <Link href="https://www.linkedin.com/in/joelludin">LinkedIn</Link>
           </Button>
           <Button asChild>
             <Link href="mailto:joelludin20@gmail.com">Contact Me</Link>
