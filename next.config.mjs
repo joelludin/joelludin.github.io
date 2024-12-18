@@ -8,6 +8,14 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  rewrites: async () => {
+    return [
+      {
+        source: '/esg-dashboard/:path*',
+        destination: '/esg-dashboard/:path*',
+      },
+    ]
+  },
 };
 
 export default nextConfig;

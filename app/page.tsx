@@ -1,9 +1,7 @@
 'use client'
 
-import dynamic from 'next/dynamic'
 import Info from './components/Info'
-
-const Scene = dynamic(() => import('./components/Scene'), { ssr: false })
+import Scene from './components/Scene'
 
 export default function Home() {
   return (
