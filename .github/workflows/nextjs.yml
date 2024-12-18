@@ -13,66 +13,26 @@ jobs:
         with:
           node-version: 20
           
-      # Debug step - show directory structure
-      - name: Debug initial structure
-        run: |
-          echo "Root directory contents:"
-          ls -la
-          echo "App directory contents:"
-          ls -la app/
-          echo "ESG Dashboard directory contents:"
-          ls -la esg-dashboard/
-          
-      # Build dashboard first
-      - name: Install dashboard dependencies
-        run: |
-          cd esg-dashboard
-          npm ci
-          
-      - name: Build dashboard
-        run: |
-          cd esg-dashboard
-          npm run build
-          echo "Dashboard build output:"
-          ls -la
-          
-      # Then build main site
-      - name: Install main site dependencies
-        run: |
-          cd app
-          npm ci
-          
+      # Build main site
       - name: Build main site
         run: |
           cd app
+          npm ci
           npm run build
-          echo "Main site build output:"
-          ls -la
           
-      # Combine outputs
-      - name: Combine builds
+      # Build dashboard
+      - name: Build dashboard
+        run: |
+          cd esg-dashboard
+          npm ci
+          npm run build
+          
+      # Combine static outputs
+      - name: Combine static builds
         run: |
           mkdir -p out/esg-dashboard
-          echo "Copying main site files..."
-          cp -r app/dist/* out/ || echo "Failed to copy main site files"
-          
-          echo "Copying dashboard files..."
-          if [ -d "esg-dashboard/out" ]; then
-            cp -r esg-dashboard/out/* out/esg-dashboard/
-          elif [ -d "esg-dashboard/dist" ]; then
-            cp -r esg-dashboard/dist/* out/esg-dashboard/
-          else
-            echo "No build output found for dashboard"
-            exit 1
-          fi
-          
-      # Debug final structure
-      - name: Debug directory structure
-        run: |
-          echo "Final out directory contents:"
-          ls -la out/
-          echo "Final esg-dashboard directory contents:"
-          ls -la out/esg-dashboard/
+          cp -r app/out/* out/
+          cp -r esg-dashboard/out/* out/esg-dashboard/
           
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
