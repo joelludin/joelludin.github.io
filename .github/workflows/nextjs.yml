@@ -2,7 +2,7 @@ name: Deploy Next.js site to Pages
 
 on:
   push:
-    branches: ["main", "test/monorepo-structure"]
+    branches: ["main", "feature/monorepo"]
 
 jobs:
   build:
@@ -15,22 +15,38 @@ jobs:
           
       # Build main site
       - name: Install main site dependencies
-        run: cd app && npm ci
+        run: |
+          cd app
+          npm ci
       - name: Build main site
-        run: cd app && npm run build
-        
+        run: |
+          cd app
+          npm run build
+          
       # Build dashboard
       - name: Install dashboard dependencies
-        run: cd esg-dashboard && npm ci
+        run: |
+          cd esg-dashboard
+          npm ci
       - name: Build dashboard
-        run: cd esg-dashboard && npm run build
+        run: |
+          cd esg-dashboard
+          npm run build
         
       # Combine outputs
       - name: Combine builds
         run: |
-          mkdir -p out
-          cp -r app/out/* out/
-          cp -r esg-dashboard/out out/esg-dashboard
+          mkdir -p out/esg-dashboard
+          cp -r app/dist/* out/
+          cp -r esg-dashboard/out/* out/esg-dashboard/
+          
+      # Debug step
+      - name: Debug directory structure
+        run: |
+          echo "Contents of out directory:"
+          ls -la out/
+          echo "Contents of out/esg-dashboard directory:"
+          ls -la out/esg-dashboard/
           
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -40,6 +56,9 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
