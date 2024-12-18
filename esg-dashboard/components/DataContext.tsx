@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState } from 'react';
 import { CompanyData } from '../types';
-import { loadData } from '@/lib/loadData';
+import { loadData } from '../lib/loadData';
 
 interface DataContextType {
   filteredData: CompanyData[];
@@ -42,4 +42,4 @@ export function useData() {
     throw new Error('useData must be used within a DataProvider');
   }
   return context;
-} 
+}
