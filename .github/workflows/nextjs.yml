@@ -2,7 +2,7 @@ name: Deploy Next.js site to Pages
 
 on:
   push:
-    branches: ["main", "feature/monorepo"]
+    branches: ["main", "feature/monorepo2"]
 
 jobs:
   build:
@@ -13,31 +13,17 @@ jobs:
         with:
           node-version: 20
           
-      # Build main site
-      - name: Build main site
+      # Install and build
+      - name: Install and build
         run: |
           cd app
-          npm ci
+          npm install
           npm run build
-          
-      # Build dashboard
-      - name: Build dashboard
-        run: |
-          cd esg-dashboard
-          npm ci
-          npm run build
-          
-      # Combine static outputs
-      - name: Combine static builds
-        run: |
-          mkdir -p out/esg-dashboard
-          cp -r app/out/* out/
-          cp -r esg-dashboard/out/* out/esg-dashboard/
           
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./out
+          path: ./app/out
 
   deploy:
     needs: build
