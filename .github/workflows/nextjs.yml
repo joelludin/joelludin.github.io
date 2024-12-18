@@ -13,39 +13,65 @@ jobs:
         with:
           node-version: 20
           
+      # Debug step - show directory structure
+      - name: Debug initial structure
+        run: |
+          echo "Root directory contents:"
+          ls -la
+          echo "App directory contents:"
+          ls -la app/
+          echo "ESG Dashboard directory contents:"
+          ls -la esg-dashboard/
+          
       # Build main site
       - name: Install main site dependencies
         run: |
           cd app
           npm ci
+          
       - name: Build main site
         run: |
           cd app
           npm run build
+          echo "Main site build output:"
+          ls -la
           
       # Build dashboard
       - name: Install dashboard dependencies
         run: |
           cd esg-dashboard
           npm ci
+          
       - name: Build dashboard
         run: |
           cd esg-dashboard
           npm run build
+          echo "Dashboard build output:"
+          ls -la
         
       # Combine outputs
       - name: Combine builds
         run: |
           mkdir -p out/esg-dashboard
-          cp -r app/dist/* out/
-          cp -r esg-dashboard/out/* out/esg-dashboard/
+          echo "Copying main site files..."
+          cp -r app/dist/* out/ || echo "Failed to copy main site files"
           
-      # Debug step
+          echo "Copying dashboard files..."
+          if [ -d "esg-dashboard/out" ]; then
+            cp -r esg-dashboard/out/* out/esg-dashboard/
+          elif [ -d "esg-dashboard/dist" ]; then
+            cp -r esg-dashboard/dist/* out/esg-dashboard/
+          else
+            echo "No build output found for dashboard"
+            exit 1
+          fi
+          
+      # Debug final structure
       - name: Debug directory structure
         run: |
-          echo "Contents of out directory:"
+          echo "Final out directory contents:"
           ls -la out/
-          echo "Contents of out/esg-dashboard directory:"
+          echo "Final esg-dashboard directory contents:"
           ls -la out/esg-dashboard/
           
       - name: Upload artifact
