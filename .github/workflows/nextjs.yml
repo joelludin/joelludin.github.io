@@ -2,12 +2,7 @@ name: Deploy Next.js site to Pages
 
 on:
   push:
-    branches: ["main"]
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+    branches: ["main", "test/monorepo-structure"]
 
 jobs:
   build:
@@ -17,10 +12,26 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Install dependencies
-        run: npm ci
-      - name: Build with Next.js
-        run: npm run build
+          
+      # Build main site
+      - name: Install main site dependencies
+        run: cd app && npm ci
+      - name: Build main site
+        run: cd app && npm run build
+        
+      # Build dashboard
+      - name: Install dashboard dependencies
+        run: cd esg-dashboard && npm ci
+      - name: Build dashboard
+        run: cd esg-dashboard && npm run build
+        
+      # Combine outputs
+      - name: Combine builds
+        run: |
+          mkdir -p out
+          cp -r app/out/* out/
+          cp -r esg-dashboard/out out/esg-dashboard
+          
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
@@ -35,4 +46,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4 
+        uses: actions/deploy-pages@v4
