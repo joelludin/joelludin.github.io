@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "convert-data": "ts-node -O '{\"module\":\"commonjs\"}' scripts/convertCsvToJson.ts"
+    "deploy": "chmod +x ./deploy.sh && ./deploy.sh"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.1",

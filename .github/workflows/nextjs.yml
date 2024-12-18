@@ -2,7 +2,13 @@ name: Deploy Next.js site to Pages
 
 on:
   push:
-    branches: ["main", "feature/monorepo3"]
+    branches: ["monorepo3"]
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build:
@@ -12,15 +18,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
           
-      # Install and build
-      - name: Install and build
+      - name: Install dependencies
         run: |
           cd app
           npm install
+
+      - name: Build
+        run: |
+          cd app
           npm run build
           touch out/.nojekyll
-          
+        
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
@@ -29,9 +39,6 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
